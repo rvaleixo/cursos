@@ -3,9 +3,11 @@
 function Mensagem($msg){
 	echo "<script type=\"text/javascript\">alert('$msg');</script>";
 }
+
 function Console($msg){
 	echo "<script type=\"text/javascript\">console.log('$msg');</script>";
 }
+
 function AbreJanela($msg,$destino){
 	echo "<script type=\"text/javascript\">window.open('$msg','$destino');</script>";
 }
