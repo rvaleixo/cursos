@@ -8,14 +8,12 @@ include 'conecta_mysqli.inc';
 include 'funcoes_padrao.php';
 
 $ERRO		= '';
-									//echo $Entrada;
-$EntradaJS 	= json_decode($Entrada);
-									//var_dump(json_decode($Entrada));
-									//echo '<br><br><br><br>'.$EntradaJS->data[0];
-$DATA		= $EntradaJS->data;
-									//echo '<br><br><br><br>'.('count($DATA)='. count($DATA) );
 
-/* Informa o níel dos erros que serão exibidos */
+$EntradaJS 	= json_decode($Entrada);
+
+$DATA		= $EntradaJS->data;
+
+/* Informa o nível dos erros que serão exibidos */
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', dirname(__FILE__) . '/error_log.txt');
@@ -28,20 +26,14 @@ $i = 0;
 foreach( $DATA as $e ){ 
 	$VALIDOU = true;
 	$i++; 
-																	//echo '<br><br>Entrada['.$i.']='.$e;
-																	//echo '<br>strpos($e, "min")='.strpos($e, 'min').'|strlen($e)='.strlen($e);
 	$pos_min 		= strpos($e, 'min');	
 	$pos_lightning	= strpos($e, 'lightning');	
-																	//echo '<br>$pos_min='.$pos_min.'|$pos_lightning='.$pos_lightning;
 	if( $pos_min > 0 ) {
+
 		$str 		= rtrim($e,'min');
-																	//echo '<br>$str='.$str;
 		$pos_espaco	=  strrpos($str, ' ');
-																	//echo '<br>$pos_espaco='.$pos_espaco;
 		$PALESTRA	= substr( $str ,0 , $pos_espaco );
 		$DURACAO	= substr( $str ,$pos_espaco + 1 , strlen($str) - ( $pos_espaco ) );
-		
-																	//echo '<br>$PALESTRA='.$PALESTRA.'$DURACAO='.$DURACAO;
 																	
 	}elseif( $pos_lightning	 > 0 ){
 		$str 		= rtrim($e,'lightning');
@@ -56,8 +48,7 @@ foreach( $DATA as $e ){
 		CarregarTabelaBD();
 	}
 }
-														//die();
-$busca_palestras = "SELECT * FROM `palestras` WHERE 1";  // ORDER BY `duracao` DESC
+$busca_palestras = "SELECT * FROM `palestras` WHERE 1";
 $busca_palestras_q = mysqli_query($link,$busca_palestras);
 if (!$busca_palestras_q){
 	echo 'Erro na Busca de Palestras: Erro => '.mysqli_error($link);
@@ -71,12 +62,10 @@ while ( $linha_palestras = mysqli_fetch_array( $busca_palestras_q ) ) {
 	$DURACAO		=	$linha_palestras['duracao'];
 	$ACHEI			= 	0;
 	$linha_periodos	=	0;
-																	//echo '<br><br><br>$PALESTRA='.$PALESTRA.'<br>$DURACAO='.$DURACAO;
 	
 	while ( !$ACHEI ) {
 		$D = intval( $DURACAO );
 		$busca_periodo = "SELECT * FROM `periodos` WHERE `tempo_restante` >= $D ORDER BY `tempo_restante` DESC";
-																	//echo '<br>$busca_periodo='.$busca_periodo;
 
 		$busca_periodo_q = mysqli_query($link,$busca_periodo);
 		if (!$busca_periodo_q){
@@ -92,13 +81,10 @@ while ( $linha_palestras = mysqli_fetch_array( $busca_palestras_q ) ) {
 			$TEMPO_RESTANTE		=	$linha_periodos['tempo_restante'];
 			$MAXIMO_HORARIO		=	$linha_periodos['maximo_horario'];
 			$MINIMO_HORARIO		=	$linha_periodos['minimo_horario'];
-																	//echo '<br>$TRILHA='.$TRILHA.'|$PERIODO='.$PERIODO.'|$TEMPO_RESTANTE='.$TEMPO_RESTANTE.'|$MAXIMO_HORARIO='.$MAXIMO_HORARIO;
 
 			// AjustaTempoRest($trilha,$periodo,$duracao)
 
 			$HORA_FINAL			=	date_create($ULTIMO_HORARIO);
-																	//echo date_format($ULTIMO_HORARIO,"Y/m/d h:i:s");
-																	//echo '<br>ANTES DA AFERICAO='.date_format($HORA_FINAL,"Y/m/d H:i:s");
 			$H1  				= date_parse ( $ULTIMO_HORARIO );
 			$MINUTO_FINAL 		= $DURACAO + $H1['minute'];
 			$HORA_FIM			= $H1['hour'];
@@ -106,16 +92,11 @@ while ( $linha_palestras = mysqli_fetch_array( $busca_palestras_q ) ) {
 				$HORA_ADICIONAL = intval( $MINUTO_FINAL /60 );  
 				$MINUTO_FINAL 	= $MINUTO_FINAL - intval( $MINUTO_FINAL /60 ) * 60  ; 
 				$HORA_FIM	   += $HORA_ADICIONAL;
-																	//ECHO '<br>ADICIONAL='.$HORA_ADICIONAL.'|HORA_FIM='.$HORA_FIM.'|MINUTO_FINAL='.$MINUTO_FINAL;
 			}
 			$HORA_FINAL 		=	date_time_set( $HORA_FINAL, $HORA_FIM , $MINUTO_FINAL );
-			
-																	//echo '<br>DEPOIS DA AFERICAO=>>>>'.date_format($HORA_FINAL,"Y/m/d H:i:s"); 
-
-			//$TEMPO_RESTANTE 	=	$MAXIMO_HORARIO - $HORA_FINAL;
 			$T_R				=	date_diff(date_create( $MAXIMO_HORARIO ) , $HORA_FINAL, true);
 			$TEMPO_RESTANTE 	=	$T_R->format("%h")  * 60 +  $T_R->format( "%i" ) ;
-																	//echo '<br>TEMPO_RESTANTE='.$TEMPO_RESTANTE;
+
 			if( $TEMPO_RESTANTE >= 0 ) {
 				if( AnotaPeriodoNaPalestra() ) {
 					$ACHEI 		=	1;
@@ -134,11 +115,9 @@ while ( $linha_palestras = mysqli_fetch_array( $busca_palestras_q ) ) {
 			break;
 		}
 		if( !$ACHEI ) {
-																		//echo '<br>!$ACHEI';
 			if (!CriaPeriodo() ) {
 				die();
 			}
-																		//die();
 		}else{
 			break;
 		}
@@ -173,7 +152,9 @@ while ( $linha_periodos = mysqli_fetch_array( $busca_periodos_q ) {
 
 }
 */
+
 ////////////////////////  Montar Saida //////////////////////// 
+
 $busca_palestras = "SELECT * FROM `palestras` WHERE 1   ORDER BY `trilha` ASC, `periodo` ASC, `hora_inicio` ASC";
 $busca_palestras_q = mysqli_query($link,$busca_palestras);
 if (!$busca_palestras_q){
@@ -234,6 +215,7 @@ var_dump(  $SAIDA_EVENTOS  );
 //var_dump( $SAIDA_EVENTOS );
 echo '<br>processo Terminado';
 ///////////////////////////////////   FUNCOES UTILIZADAS ///////////////////////////////////
+
 function ApagaTabelaBD(){
 	global $link;
 	$apaga_palestra = "DELETE FROM `palestras` WHERE 1";
@@ -268,6 +250,7 @@ function ApagaTabelaBD(){
 	}
 	$link -> commit();
 }
+
 function CarregarTabelaBD(){
 	global $PALESTRA, $DURACAO, $link;
 
@@ -301,6 +284,7 @@ function CarregarTabelaBD(){
 
 function CriaPeriodo() {
 	global $link;
+	
 	// ler parametros
 	$busca_parametros = "SELECT * FROM `parametros` WHERE 1";
 	$busca_parametros_q = mysqli_query($link,$busca_parametros);
@@ -315,8 +299,6 @@ function CriaPeriodo() {
 	$ULTIMO_PERIODO		=	$linha_parametros ['ultimo_periodo'];
 	$MAX_T				=	$linha_parametros ['max_t'];
 	$INICIEI_PROCESSO	= 	$linha_parametros ['iniciei_processo'];
-	
-																				//ECHO '<br>ANTES:$ULTIMA_TRILHA='.$ULTIMA_TRILHA.'|$ULTIMO_PERIODO='.$ULTIMO_PERIODO.'|$INICIEI_PROCESSO='.$INICIEI_PROCESSO;
 																				
 	// ajustar novo período
 	if( $INICIEI_PROCESSO ) {
@@ -324,17 +306,11 @@ function CriaPeriodo() {
 			$ULTIMA_TRILHA 	= $ULTIMA_TRILHA + 1;
 			$ULTIMO_PERIODO = 'M';
 		}else{ 
-																				//echo '<br><br><br>passei';
 			$ULTIMO_PERIODO = 'V';
 		}
 	}
 	if( $ULTIMA_TRILHA > $MAX_T  ) {   // MOSTRA ERRO
 		echo 'Erro: Foram Preenchidos Todas as '.$MAX_T.' Trilhas Permitidas!';
-		/*
-		echo ' "<script>javascript:history.back(-1)</script>"';
-		mysqli_close($link);
-		die();
-		*/
 		return false;
 	}
 	if( $ULTIMO_PERIODO == 'M' ) {
@@ -348,8 +324,6 @@ function CriaPeriodo() {
 		$TEMPO_RESTANTE	=  240;
 	}
 	$ULTIMO_HORARIO  =  date_create();
-																				//ECHO '<br>DEPOIS:$ULTIMA_TRILHA='.$ULTIMA_TRILHA.'|$ULTIMO_PERIODO='.$ULTIMO_PERIODO;;
-																				// if( $INICIEI_PROCESSO ) { DIE(); }
 	// gravar parametros
 	$atualiza_parametros = "UPDATE 	`parametros` 
 								SET `ultima_trilha`		= '$ULTIMA_TRILHA',
@@ -376,8 +350,8 @@ function CriaPeriodo() {
 	$link -> commit();
 	return true;
 }
-function AnotaPeriodoNaPalestra() {
 
+function AnotaPeriodoNaPalestra() {
 	global $PALESTRA, $TRILHA, $PERIODO, $ULTIMO_HORARIO, $HORA_FINAL, $link;
 	
 	// gravar na palestra em tratamento a trilha, período e o horário de inicio dela
@@ -397,7 +371,6 @@ function AnotaPeriodoNaPalestra() {
 		mysqli_close($link);
 		die();
 	}
-																					//ECHO '<br>$atualiza_palestra= '.$atualiza_palestra;
 	$link -> commit();
 	return true;
 }
@@ -412,7 +385,6 @@ function AtualizaPeriodo() {
 									`ultimo_horario`= '$H'
 							WHERE 	`trilha` 		= '$TRILHA' and
 									`periodo`		= '$PERIODO'";
-																					//ECHO '<br>$atualiza_periodo= '.$atualiza_periodo;
 									
 	$atualiza_periodo_q = mysqli_query($link,$atualiza_periodo);
 	if (!$atualiza_periodo_q){
@@ -490,5 +462,4 @@ function AtualizaPeriodo() {
    ]  
 } 
 */
-
 ?>
